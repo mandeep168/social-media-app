@@ -6,7 +6,7 @@ import {
 } from "./Reducers/User";
 
 import {
-    likeReducer,
+    likeReducer, myPostsReducer,
 } from "./Reducers/Post";
 
 const store = configureStore({
@@ -15,6 +15,7 @@ const store = configureStore({
         postOfFollowing: postOfFollowingReducer,
         allUsers: allUsersReducer,
         like: likeReducer,
+        myPosts: myPostsReducer,
     }
 });
 

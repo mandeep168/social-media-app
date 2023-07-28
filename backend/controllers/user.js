@@ -48,9 +48,10 @@ exports.login = async (req, res) => {
     try{
         const {email, password} = req.body;
         
-        console.log(email);
+        const user = await User.findOne({email})
+        .select("+password")
+        .populate("posts followers following");
         
-        const user = await User.findOne({email}).select("+password");
         if(!user){
             return res.status(400).json({
                 success: false,
@@ -291,7 +292,7 @@ exports.deleteMyProfile = async (req, res) => {
 
 exports.myProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate("posts");
+        const user = await User.findById(req.user._id).populate("posts followers following");
 
         res.status(200).json({
             success: true, 
@@ -308,7 +309,7 @@ exports.myProfile = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
     try {
-        let user = await User.findById(req.params.id).populate("posts").lean();
+        let user = await User.findById(req.params.id).populate("posts followers following");
 
         if(!user){
             return res.status(400).json({
@@ -317,23 +318,23 @@ exports.getUserProfile = async (req, res) => {
             });
         }
 
-        user.posts = await Promise.all(
-            user.posts.map(async post => {
-                const likes = await Promise.all(
-                    post.likes.map(async likeByUser => {
-                        const userWhoLiked = await User.findById(likeByUser);
-                        return userWhoLiked;
-                    })
-                );
-                const comments = await Promise.all(
-                    post.comments.map(async comment => {
-                        const userCommented = await User.findById(comment.user);
-                        return {...comment, user: userCommented};
-                    })
-                );
-                return {...post, likes, comments}
-            })
-        );
+        // user.posts = await Promise.all(
+        //     user.posts.map(async post => {
+        //         const likes = await Promise.all(
+        //             post.likes.map(async likeByUser => {
+        //                 const userWhoLiked = await User.findById(likeByUser);
+        //                 return userWhoLiked;
+        //             })
+        //         );
+        //         const comments = await Promise.all(
+        //             post.comments.map(async comment => {
+        //                 const userCommented = await User.findById(comment.user);
+        //                 return {...comment, user: userCommented};
+        //             })
+        //         );
+        //         return {...post, likes, comments}
+        //     })
+        // );
         
         res.status(200).json({
             success: true, 
@@ -447,6 +448,29 @@ exports.resetPassword = async (req, res) => {
         return res.status(201).json({
             success: true, 
             message: "Password updated successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false, 
+            message: err.message
+        });
+    }
+};
+
+exports.getMyPosts = async ( req, res ) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        const posts = [];
+
+        for(let i=0;i<user.posts.length;i++) {
+            const post = await Post.findById(user.posts[i]).populate("likes comments.user");
+            posts.push(post);
+        }
+
+        res.status(200).json({
+            success: true, 
+            posts,
         });
     } catch (err) {
         res.status(500).json({

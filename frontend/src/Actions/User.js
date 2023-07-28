@@ -89,3 +89,46 @@ export const getAllUsers = () => async (dispatch) => {
         });
     }
 };
+
+export const getMyPosts = () => async (dispatch) => {
+    try {
+
+        dispatch({
+            type: "myPostsRequest",
+        });
+
+        const { data } = await axios.get("api/v1/my/posts");
+        dispatch({
+            type: "myPostsSuccess",
+            payload: data.posts,
+        });
+
+    } catch (err) {
+        dispatch({
+            type: "myPostsFailure",
+            payload: err.response.data.message,
+        });
+    }
+};
+
+
+export const logoutUser = (email, password) => async (dispatch) => {
+    try {
+
+        dispatch ({
+            type: "LogoutUserRequest"
+        });
+
+        const {data} = await axios.get(
+            "/api/v1/logout");
+
+        dispatch ({
+            type: "LogoutUserSuccess",
+        });
+    } catch (err) {
+        dispatch ({
+            type: "LogoutUserFailure",
+            payload:  err.response.data.message,
+        })
+    }
+};
