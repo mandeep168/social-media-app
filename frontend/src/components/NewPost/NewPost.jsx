@@ -1,11 +1,19 @@
 import { Typography, Button } from '@mui/material';
-import React, {useState} from 'react'
+import React, { useState, useEffect } from 'react'
 import './NewPost.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { createNewPost } from '../../Actions/Post';
+import { useAlert } from 'react-alert';
+import { loadUser } from '../../Actions/User';
 
 const NewPost = () => {
 
     const [image, setImage] = useState(null);
     const [caption, setCaption] = useState("");
+
+    const {loading, error, message} = useSelector((state) => state.like);
+    const dispatch = useDispatch();
+    const alert = useAlert();
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -22,9 +30,23 @@ const NewPost = () => {
 
     }
 
-    const submitHandler = () => {
-        
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        await dispatch(createNewPost(caption, image));
+        dispatch(loadUser());
     }
+
+    useEffect(() => {
+        if(error) {
+            alert.error(error);
+            dispatch({ type: "clearErrors" });
+        }
+
+        if(message) {
+            alert.success(message);
+            dispatch({ type: "clearMessages" });
+        }
+    }, [ dispatch, error, message, alert ]);
 
   return (
     <div className='newPost'>
@@ -39,7 +61,9 @@ const NewPost = () => {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             />
-        <Button type="submit">Post</Button>
+        <Button type="submit" disabled={loading} >
+            Post
+        </Button>
       </form>
     </div>
   )

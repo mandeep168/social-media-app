@@ -17,9 +17,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   addCommentOnPost,
   likePost,
+  updatePost,
+  deletePost,
 }
 from "../../Actions/Post";
-import { getFollowingPosts } from '../../Actions/User';
+import { getFollowingPosts, getMyPosts, loadUser } from '../../Actions/User';
 
 const Post = ({
     postId, 
@@ -38,6 +40,8 @@ const Post = ({
   const [likesUser, setLikesUser] = useState(false);
   const [commentValue, setCommentValue] = useState("");
   const [commentToggle, setCommentToggle] = useState(false);
+  const [captionValue, setCaptionValue] = useState(caption);
+  const [captionToggle, setCaptionToggle] = useState(false);
 
   const dispatch = useDispatch();
   const {user} = useSelector(state => state.user);
@@ -48,7 +52,7 @@ const Post = ({
     await dispatch(likePost(postId))
     
     if(isAccount) {
-      console.log("Likes my own post");
+      dispatch(getMyPosts());
     }else{
       dispatch(getFollowingPosts());
     }
@@ -60,10 +64,22 @@ const Post = ({
     await dispatch(addCommentOnPost(postId, commentValue));
 
     if(isAccount) {
-      console.log("Likes my own post");
+      dispatch(getMyPosts());
     }else{
       dispatch(getFollowingPosts());
     }
+  }
+
+  const updateCaptionHandler = (e) => {
+    e.preventDefault();
+    dispatch(updatePost(captionValue, postId));
+    dispatch(getMyPosts);
+  }
+
+  const deletePostHandler = async () => {
+    await dispatch(deletePost(postId));
+    dispatch(getMyPosts());
+    dispatch(loadUser());
   }
 
   useEffect(() => {
@@ -79,7 +95,7 @@ const Post = ({
     <div className="post">
       <div className="postHeader">
         {
-          isAccount && <Button>
+          isAccount && <Button onClick={() => setCaptionToggle(!captionToggle)}>
               <MoreVert />
           </Button>
         }
@@ -132,7 +148,7 @@ const Post = ({
           </Button>
 
           {
-            isDelete && <Button>
+            isDelete && <Button onClick={deletePostHandler}>
                           <DeleteOutline />
                         </Button>
           }
@@ -190,6 +206,28 @@ const Post = ({
                   />);
                 }) : <Typography>No Comments Yet</Typography>
               }
+            </div>
+          </Dialog>
+
+          <Dialog 
+          open={captionToggle}
+          onClose={() => setCaptionToggle(!captionToggle)}
+          >
+            <div className='DialogBox'>
+              <Typography variant="h4">Update Caption</Typography>
+
+              <form className="commentForm" onSubmit={updateCaptionHandler}>
+                <input 
+                  type="text" 
+                  value={captionValue} 
+                  onChange={(e) => setCaptionValue(e.target.value)}
+                  placeholder = "Comment here..."
+                  required
+                />
+                <Button type="submit" variant="contained"> Update </Button>
+              </form>
+              
+            
             </div>
           </Dialog>
     </div>

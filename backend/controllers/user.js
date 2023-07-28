@@ -2,10 +2,11 @@ const User = require("../models/User");
 const Post = require("../models/Post");
 const { sendEmail } = require("../middlewares/sendEmail");
 const crypto = require('crypto');
+const cloudinary = require('cloudinary');
 
 exports.register = async (req, res) => {
     try{
-        const {name, email, password} = req.body;
+        const {name, email, password, avatar} = req.body;
         let user = await User.findOne({ email });
         if(user) {
             return res
@@ -13,13 +14,17 @@ exports.register = async (req, res) => {
                 .json({ success: true, message: "User already exists" });
         }
 
+        const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+            folder: "avatars",
+        });
+
         user = await User.create({
             name, 
             email, 
             password, 
             avatar:{
-                public_id: "sample_id", 
-                url: "sampleurl"
+                public_id: myCloud.public_id, 
+                url: myCloud.secure_url,
             },
         });
 
@@ -206,11 +211,10 @@ exports.updatePassword = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
     try {
+        
         const user = await User.findById(req.user._id);
 
-        const { name, email } = req.body;
-
-        
+        const { name, email, avatar } = req.body;
 
         if(email){
             const userEmail = User.findOne({ email });
@@ -225,7 +229,19 @@ exports.updateProfile = async (req, res) => {
         if(name){
             user.name = name;
         }
+        
+        if(avatar) {
+            console.log(avatar);
+            await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+                folder: 'avatars',
+            });
+
+            user.avatar.public_id = myCloud.public_id;
+            user.avatar.url = myCloud.secure_url;
+        }
+        
         await user.save();
 
         res.status(200).json({
@@ -464,7 +480,9 @@ exports.getMyPosts = async ( req, res ) => {
         const posts = [];
 
         for(let i=0;i<user.posts.length;i++) {
-            const post = await Post.findById(user.posts[i]).populate("likes comments.user");
+            const post = await Post.findById(user.posts[i]).populate(
+                "likes comments.user owner"
+            );
             posts.push(post);
         }
 

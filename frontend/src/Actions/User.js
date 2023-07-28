@@ -27,6 +27,33 @@ export const loginUser = (email, password) => async (dispatch) => {
     }
 };
 
+export const registerUser = (name, email, password, avatar) => async (dispatch) => {
+    try {
+
+        dispatch ({
+            type: "RegisterRequest"
+        });
+
+        const {data} = await axios.post(
+            "/api/v1/register", 
+            {name, email, password, avatar}, {
+            headers: {
+                "Content-Type" : "application/json"
+            }
+        });
+
+        dispatch ({
+            type: "RegisterSuccess",
+            payload: data.user,
+        });
+    } catch (err) {
+        dispatch ({
+            type: "RegisterFailure",
+            payload:  err.response.data.message,
+        })
+    }
+};
+
 export const loadUser = () => async (dispatch) => {
     try {
         dispatch ({
@@ -128,6 +155,60 @@ export const logoutUser = (email, password) => async (dispatch) => {
     } catch (err) {
         dispatch ({
             type: "LogoutUserFailure",
+            payload:  err.response.data.message,
+        })
+    }
+};
+
+export const updateProfile = (name, email, avatar) => async (dispatch) => {
+    try {
+
+        dispatch ({
+            type: "updateProfileRequest"
+        });
+
+        const {data} = await axios.put(
+            "/api/v1/update/profile", 
+            {name, email, avatar}, {
+            headers: {
+                "Content-Type" : "application/json"
+            }
+        });
+
+        dispatch ({
+            type: "updateProfileSuccess",
+            payload: data.message,
+        });
+    } catch (err) {
+        dispatch ({
+            type: "updateProfileFailure",
+            payload:  err.response.data.message,
+        })
+    }
+};
+
+export const updatePassword = ( oldPassword, newPassword ) => async (dispatch) => {
+    try {
+
+        dispatch ({
+            type: "updatePasswordRequest"
+        });
+
+        const {data} = await axios.put(
+            "/api/v1/update/password", 
+            { oldPassword, newPassword }, {
+            headers: {
+                "Content-Type" : "application/json"
+            }
+        });
+
+        dispatch ({
+            type: "updatePasswordSuccess",
+            payload: data.message,
+        });
+    } catch (err) {
+        dispatch ({
+            type: "updatePasswordFailure",
             payload:  err.response.data.message,
         })
     }

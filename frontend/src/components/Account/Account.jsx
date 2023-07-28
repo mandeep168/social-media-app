@@ -56,16 +56,18 @@ const Account = () => {
                 posts && posts.length > 0 ? posts.map(post => {
                     return (<Post 
                         key={post._id}
-                        postImage={"https://img.freepik.com/free-photo/lone-tree_181624-46361.jpg?size=626&ext=jpg"} 
+                        // postImage={"https://img.freepik.com/free-photo/lone-tree_181624-46361.jpg?size=626&ext=jpg"} 
                         // ownerName={'MandeepKaur'} 
                         postId={post._id}
                         caption={post.caption}
-                        // postImage={post.image.url}
+                        postImage={post.image.url}
                         likes={post.likes}
                         comments={post.comments}
                         ownerImage={"https://img.freepik.com/free-photo/lone-tree_181624-46361.jpg?size=626&ext=jpg"}
                         ownerName={post.owner.name}
                         ownerId={post.owner._id}
+                        isAccount={true}
+                        isDelete={true}
                         />)
 
                     }) : <Typography variant="h6">No posts yet</Typography>
