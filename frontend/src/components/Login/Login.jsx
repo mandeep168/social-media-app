@@ -1,9 +1,11 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import "./Login.css";
 import { Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from "../../Actions/User";
+import { useAlert } from "react-alert";
+
 
 
 const Login = () => {
@@ -11,12 +13,27 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const dispatch = useDispatch();
+    const alert = useAlert();
+
+    const { error } = useSelector((state) => state.user);
+    const { message } = useSelector((state) => state.like);
 
     const loginHandler = (e) => {
         e.preventDefault();   // prevents page from reloading
         
         dispatch(loginUser(email, password));
     };
+
+    useEffect(() => {
+        if(error) {
+            alert.error(error);
+            dispatch({type: "clearErrors"});
+        }
+        if(message) {
+            alert.success(message);
+            dispatch({type: "clearMessage"});
+        }
+    }, [alert, error, message, dispatch]);
 
   return (
     <div className="login">

@@ -213,3 +213,26 @@ export const updatePassword = ( oldPassword, newPassword ) => async (dispatch) =
         })
     }
 };
+
+export const deleteMyProfile = () => async (dispatch) => {
+    try {
+
+        dispatch ({
+            type: "deleteProfileRequest"
+        });
+
+        const {data} = await axios.delete(
+            "api/v1/delete/profile"
+        )
+
+        dispatch ({
+            type: "deleteProfileSuccess",
+            payload: data.message,
+        });
+    } catch (err) {
+        dispatch ({
+            type: "deleteProfileFailure",
+            payload:  err.response.data.message,
+        })
+    }
+};
